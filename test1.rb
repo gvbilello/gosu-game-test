@@ -22,10 +22,13 @@ class Sprite
 	def initialize(window)
 		@window = window
 		@animation = load_animation(@window)
+		@ground = @window.height - (TILE_WIDTH * 2)
+
 		@x_position = @window.height / 2
-		@y_position = @window.height - (TILE_WIDTH * 2)
+		@y_position = @ground
 		@x_velocity = 0
 		@y_velocity = 0
+
 		@on_ground = true
 		@direction = :right
 		@current_frame = 23
@@ -58,26 +61,29 @@ class Sprite
 			if @on_ground
 				@y_velocity = -12.0
 				@on_ground = false
-			end
+			
+				# until @on_ground
+				# 	@y_velocity += GRAVITY
+				# 	@y_position += @y_velocity
+				# 	@x_position += @x_velocity
 
-			if @y_velocity < -6.0
-				@y_velocity = -6.0
-			end
+				# 	if @y_position >=	@ground
+				# 		@y_position = @ground
+				# 		@on_ground = true
+				# 	end
+				# end
 
-			if @y_position ==	@window.height - (TILE_WIDTH * 2)
-				@on_ground = true
-			end
+				if @y_velocity < -6.0
+					@y_velocity = -6.0
+				end
 
-			@y_velocity += GRAVITY
-			@y_position += @y_velocity
-			@x_position += @x_velocity
+			end
 		end
 	end
 
 	def update
-		# idle jump animation
-		jump
 
+		jump
 		move_left
 		move_right
 
@@ -90,6 +96,18 @@ class Sprite
 	end
 
 	def draw
+		if @on_ground == false
+			# binding.pry
+			@y_velocity += GRAVITY
+			@y_position += @y_velocity
+			@x_position += @x_velocity
+		end
+
+		if @y_position >= @ground
+			@y_position = @ground
+			@on_ground = true
+		end
+
 		if @direction == :left
 			@animation[@current_frame].draw(@x_position, @y_position, 1, -1)
 		elsif @direction == :right
