@@ -13,6 +13,7 @@ class Sprite
 	FRAME_DELAY = 120
 	SPRITE = media_path('characters.png')
 	TILE_WIDTH = 32
+	GRAVITY = 0.5
 
 	def load_animation(window)
     Gosu::Image.load_tiles(window, SPRITE, 32, 32, false)
@@ -21,43 +22,63 @@ class Sprite
 	def initialize(window)
 		@window = window
 		@animation = load_animation(@window)
-		@x = @window.height / 2
-		@y = @window.height - (TILE_WIDTH * 2)
+		@x_position = @window.height / 2
+		@y_position = @window.height - (TILE_WIDTH * 2)
+		@x_velocity = 0
+		@y_velocity = 0
+		@on_ground = true
 		@direction = :right
 		@current_frame = 23
 	end
 
 	def move_left
-		if @window.button_down?(Gosu::KbLeft) && @x > (TILE_WIDTH * 2)
+		if @window.button_down?(Gosu::KbLeft) && @x_position > (TILE_WIDTH * 2)
 			if @direction == :right
 				@direction = :left
-				@x = @x + TILE_WIDTH
+				@x_position = @x_position + TILE_WIDTH
 			elsif @direction == :left
-				@x -= 5
+				@x_position -= 5
 			end
 		end
 	end
 
 	def move_right
-		if @window.button_down?(Gosu::KbRight) && @x < (@window.width - TILE_WIDTH * 2)
+		if @window.button_down?(Gosu::KbRight) && @x_position < (@window.width - TILE_WIDTH * 2)
 			if @direction == :left
 				@direction = :right
-				@x = @x - TILE_WIDTH
+				@x_position = @x_position - TILE_WIDTH
 			elsif @direction == :right
-				@x += 5
+				@x_position += 5
 			end
+		end
+	end
+
+	def jump
+		if @window.button_down?(Gosu::KbUp)
+			if @on_ground
+				@y_velocity = -12.0
+				@on_ground = false
+			end
+
+			if @y_velocity < -6.0
+				@y_velocity = -6.0
+			end
+
+			if @y_position ==	@window.height - (TILE_WIDTH * 2)
+				@on_ground = true
+			end
+
+			@y_velocity += GRAVITY
+			@y_position += @y_velocity
+			@x_position += @x_velocity
 		end
 	end
 
 	def update
 		# idle jump animation
-		if @window.button_down?(Gosu::KbUp)
-			# jump
-		end
+		jump
 
-		# left run animation & change direction from right to left
 		move_left
-		# right run animation & change direction from left to right
 		move_right
 
 		@current_frame += 1 if frame_expired?
@@ -70,9 +91,9 @@ class Sprite
 
 	def draw
 		if @direction == :left
-			@animation[@current_frame].draw(@x, @y, 1, -1)
+			@animation[@current_frame].draw(@x_position, @y_position, 1, -1)
 		elsif @direction == :right
-			@animation[@current_frame].draw(@x, @y, 1)
+			@animation[@current_frame].draw(@x_position, @y_position, 1)
 		end
 	end
 
