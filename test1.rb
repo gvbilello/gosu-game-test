@@ -10,20 +10,43 @@ end
 
 class Sprite
 
-	FRAME_DELAY = 10
+	FRAME_DELAY = 120
 	SPRITE = media_path('characters.png')
 	TILE_WIDTH = 32
-	# def self.load_animation(window)
-  #   Gosu::Image.load_tiles(window, SPRITE, 32, 32, false)
-  # end
+
+	def load_animation(window)
+    Gosu::Image.load_tiles(window, SPRITE, 32, 32, false)
+  end
 
 	def initialize(window)
 		@window = window
-		@animation = Gosu::Image.load_tiles(@window, SPRITE, 32, 32, false)
+		@animation = load_animation(@window)
 		@x = @window.height / 2
 		@y = @window.height - (TILE_WIDTH * 2)
 		@direction = :right
 		@current_frame = 23
+	end
+
+	def move_left
+		if @window.button_down?(Gosu::KbLeft) && @x > (TILE_WIDTH * 2)
+			if @direction == :right
+				@direction = :left
+				@x = @x + TILE_WIDTH
+			elsif @direction == :left
+				@x -= 5
+			end
+		end
+	end
+
+	def move_right
+		if @window.button_down?(Gosu::KbRight) && @x < (@window.width - TILE_WIDTH * 2)
+			if @direction == :left
+				@direction = :right
+				@x = @x - TILE_WIDTH
+			elsif @direction == :right
+				@x += 5
+			end
+		end
 	end
 
 	def update
@@ -33,27 +56,16 @@ class Sprite
 		end
 
 		# left run animation & change direction from right to left
-		if @window.button_down?(Gosu::KbLeft) && @x > (TILE_WIDTH * 2)
-			if @direction == :right
-				@direction = :left
-				@x = @x + TILE_WIDTH
-			elsif @direction == :left
-				@x -= 1
-			end
+		move_left
 		# right run animation & change direction from left to right
-		elsif @window.button_down?(Gosu::KbRight) && @x < (@window.width - TILE_WIDTH * 2)
-			if @direction == :left
-				@direction = :right
-				@x = @x - TILE_WIDTH
-			elsif @direction == :right
-				@x += 1
-			end
-		end
-		@current_frame += 1
+		move_right
 
-		if @current_frame == 26
+		@current_frame += 1 if frame_expired?
+
+		if @current_frame == 25
 			@current_frame = 23
 		end
+
 	end
 
 	def draw
@@ -65,6 +77,18 @@ class Sprite
 	end
 
 	private
+
+	def current_frame
+		@animation[@current_frame]
+	end
+
+	def frame_expired?
+		now = Gosu.milliseconds
+		@last_frame ||= now
+		if (now - @last_frame) > FRAME_DELAY
+			@last_frame = now
+		end
+	end
 
 end
 
