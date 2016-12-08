@@ -22,7 +22,7 @@ class Sprite
 	def initialize(window)
 		@window = window
 		@animation = load_animation(@window)
-		@ground = @window.height - (TILE_WIDTH * 2)
+		@ground = @window.height - TILE_WIDTH * 2
 
 		@x_position = @window.height / 2
 		@y_position = @ground
@@ -62,19 +62,8 @@ class Sprite
 				@y_velocity = -12.0
 				@on_ground = false
 			
-				# until @on_ground
-				# 	@y_velocity += GRAVITY
-				# 	@y_position += @y_velocity
-				# 	@x_position += @x_velocity
-
-				# 	if @y_position >=	@ground
-				# 		@y_position = @ground
-				# 		@on_ground = true
-				# 	end
-				# end
-
-				if @y_velocity < -6.0
-					@y_velocity = -6.0
+				if @y_velocity < -10.0
+					@y_velocity = -10.0
 				end
 
 			end
@@ -89,7 +78,7 @@ class Sprite
 
 		@current_frame += 1 if frame_expired?
 
-		if @current_frame == 25
+		if @current_frame == 26
 			@current_frame = 23
 		end
 
@@ -97,7 +86,6 @@ class Sprite
 
 	def draw
 		if @on_ground == false
-			# binding.pry
 			@y_velocity += GRAVITY
 			@y_position += @y_velocity
 			@x_position += @x_velocity
@@ -113,9 +101,16 @@ class Sprite
 		elsif @direction == :right
 			@animation[@current_frame].draw(@x_position, @y_position, 1)
 		end
+
+		@info = Gosu::Image.from_text(@window, info, Gosu.default_font_name, 30)
+		@info.draw(0, 0, 1)
 	end
 
 	private
+
+	def info
+		"x:#{@x_position} y:#{@y_position}"
+	end
 
 	def current_frame
 		@animation[@current_frame]
