@@ -10,19 +10,19 @@ end
 
 class Sprite
 
-	FRAME_DELAY = 120
-	SPRITE = media_path('characters.png')
+	FRAME_DELAY = 180
+	SPRITE = media_path('character1-large.png')
 	TILE_WIDTH = 32
 	GRAVITY = 0.5
 
 	def load_animation(window)
-    Gosu::Image.load_tiles(window, SPRITE, 32, 32, false)
+    Gosu::Image.load_tiles(window, SPRITE, 64, 64, false)
   end
 
 	def initialize(window)
 		@window = window
 		@animation = load_animation(@window)
-		@ground = @window.height - TILE_WIDTH * 2
+		@ground = @window.height - TILE_WIDTH * 3
 
 		@x_position = @window.height / 2
 		@y_position = @ground
@@ -31,28 +31,38 @@ class Sprite
 
 		@on_ground = true
 		@direction = :right
-		@current_frame = 23
+		@current_frame = 0
+	end
+
+	def can_move_left?
+		return true if @x_position > (TILE_WIDTH * 2.5)
+	end
+
+	def can_move_right?
+		return true if @x_position < (@window.width - (TILE_WIDTH * 2.5))
 	end
 
 	def move_left
-		if @window.button_down?(Gosu::KbLeft) && @x_position > (TILE_WIDTH * 2)
+		if @window.button_down?(Gosu::KbLeft) && can_move_left?
 			if @direction == :right
 				@direction = :left
-				@x_position = @x_position + TILE_WIDTH
+				@x_position = @x_position + TILE_WIDTH * 2
 			elsif @direction == :left
 				@x_position -= 5
 			end
+			@current_frame += 1 if frame_expired?
 		end
 	end
 
 	def move_right
-		if @window.button_down?(Gosu::KbRight) && @x_position < (@window.width - TILE_WIDTH * 2)
+		if @window.button_down?(Gosu::KbRight) && can_move_right?
 			if @direction == :left
 				@direction = :right
-				@x_position = @x_position - TILE_WIDTH
+				@x_position = @x_position - TILE_WIDTH * 2
 			elsif @direction == :right
 				@x_position += 5
 			end
+			@current_frame += 1 if frame_expired?
 		end
 	end
 
@@ -76,10 +86,10 @@ class Sprite
 		move_left
 		move_right
 
-		@current_frame += 1 if frame_expired?
+		# @current_frame += 1 if frame_expired?
 
-		if @current_frame == 26
-			@current_frame = 23
+		if @current_frame == 3
+			@current_frame = 0
 		end
 
 	end
@@ -140,7 +150,6 @@ class GameWindow < Gosu::Window
   end
 
   def update
-  	# binding.pry
   	@sprite.update
   end
 
